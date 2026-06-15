@@ -123,7 +123,7 @@ function DashboardContent() {
       ] = await Promise.all([
         supabase.from('org_members').select('full_name').not('full_name', 'is', null),
         supabase.from('leads').select('id, name, phone, owner, value, stage, created_at, activities(id)').eq('stage', 'new'),
-        supabase.from('leads').select('id, stage, value, created_at'),
+        supabase.from('leads').select('id, name, phone, owner, value, stage, created_at'),
         supabase.from('tasks').select('*, leads(id, name)').eq('status', 'open').eq('due_date', today),
         supabase.from('tasks').select('*, leads(id, name)').eq('status', 'open').gt('due_date', today).lte('due_date', nextWeek),
         supabase.from('activities').select('id, type, text, by, ts, leads(name)').order('ts', { ascending: false }).limit(6),
