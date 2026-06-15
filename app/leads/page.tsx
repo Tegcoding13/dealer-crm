@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useOrgId } from '@/lib/use-org-id'
+import { useEmployees } from '@/lib/use-employees'
 import AppLayout from '../components/AppLayout'
 
 type Lead = {
@@ -24,8 +25,6 @@ type Lead = {
 const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'closed-won', 'closed-lost']
 
 const SOURCES = ['Referral', 'Website', 'Walk-in', 'Social Media', 'Cold Call', 'Event', 'Email Campaign', 'Other']
-
-const OWNERS = ['Tyler Egnarski']
 
 const STAGE_COLORS: Record<string, string> = {
   'new': 'bg-gray-100 text-gray-600',
@@ -52,6 +51,7 @@ const EMPTY_FORM = {
 
 export default function LeadsPage() {
   const orgId = useOrgId()
+  const employees = useEmployees()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -101,16 +101,32 @@ export default function LeadsPage() {
     if (error) {
       setFormError(error.message)
     } else {
-      // Auto-create initial task for every new lead
+      // Auto-create follow-up tasks for every new lead
       const { data: newLead } = await supabase.from('leads').select('id').order('created_at', { ascending: false }).limit(1).single()
       if (newLead) {
-        await supabase.from('tasks').insert({
-          lead_id: newLead.id,
-          title: 'Follow-up call',
-          assigned_to: form.owner || null,
-          status: 'open',
-          organization_id: orgId,
-        })
+        const addDays = (n: number) => {
+          const d = new Date()
+          d.setDate(d.getDate() + n)
+          return d.toISOString().slice(0, 10)
+        }
+        await supabase.from('tasks').insert([
+          {
+            lead_id: newLead.id,
+            title: 'Follow-up call (3 day)',
+            assigned_to: form.owner || null,
+            due_date: addDays(3),
+            status: 'open',
+            organization_id: orgId,
+          },
+          {
+            lead_id: newLead.id,
+            title: 'Follow-up call (2 week)',
+            assigned_to: form.owner || null,
+            due_date: addDays(14),
+            status: 'open',
+            organization_id: orgId,
+          },
+        ])
       }
       setForm(EMPTY_FORM)
       setShowForm(false)
@@ -252,7 +268,7 @@ export default function LeadsPage() {
               {/* Owner dropdown */}
               <select value={form.owner} onChange={e => setForm({ ...form, owner: e.target.value })} className={inp}>
                 <option value="">Select owner…</option>
-                {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                {employees.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
 
               {/* Value + Stage */}

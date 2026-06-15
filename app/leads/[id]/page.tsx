@@ -114,6 +114,9 @@ export default function LeadDetailPage() {
   const [callStatus, setCallStatus] = useState('')
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showLostModal, setShowLostModal] = useState(false)
+  const [lostReason, setLostReason] = useState('')
+  const [pendingStage, setPendingStage] = useState('')
 
   useEffect(() => {
     if (id) load()
@@ -149,15 +152,29 @@ export default function LeadDetailPage() {
 
   const changeStage = async (newStage: string) => {
     if (!lead || newStage === lead.stage) return
+    if (newStage === 'closed-lost') {
+      setPendingStage(newStage)
+      setLostReason('')
+      setShowLostModal(true)
+      return
+    }
+    await applyStageChange(newStage, '')
+  }
+
+  const applyStageChange = async (newStage: string, reason: string) => {
+    if (!lead) return
     const { error } = await supabase
       .from('leads')
       .update({ stage: newStage, updated_at: new Date().toISOString() })
       .eq('id', lead.id)
     if (!error) {
+      const actText = newStage === 'closed-lost' && reason
+        ? `Stage changed from "${lead.stage}" to "${newStage}" — Reason: ${reason}`
+        : `Stage changed from "${lead.stage}" to "${newStage}"`
       await supabase.from('activities').insert({
         lead_id: lead.id,
         type: 'stage',
-        text: `Stage changed from "${lead.stage}" to "${newStage}"`,
+        text: actText,
         by: lead.owner || 'system',
         ts: new Date().toISOString(),
         organization_id: orgId,
@@ -165,6 +182,13 @@ export default function LeadDetailPage() {
       setLead({ ...lead, stage: newStage })
       load()
     }
+  }
+
+  const confirmLost = async () => {
+    await applyStageChange(pendingStage, lostReason)
+    setShowLostModal(false)
+    setLostReason('')
+    setPendingStage('')
   }
 
   const logActivity = async () => {
@@ -359,6 +383,50 @@ export default function LeadDetailPage() {
                 </button>
                 <button
                   onClick={() => setShowDelete(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm font-medium hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lost reason modal */}
+        {showLostModal && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900">Why is this lead lost?</h2>
+              <p className="text-sm text-gray-500 mt-1 mb-4">Helps the team understand what happened and improve future outreach.</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['Went with competitor', 'Price too high', 'Not ready to buy', 'No response', 'Changed their mind'].map(preset => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setLostReason(preset)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${lostReason === preset ? 'border-red-400 bg-red-50 text-red-700' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                rows={2}
+                placeholder="Reason (or add custom details)…"
+                value={lostReason}
+                onChange={e => setLostReason(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none mb-4"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={confirmLost}
+                  className="flex-1 bg-red-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-red-700"
+                >
+                  Mark as Lost
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowLostModal(false); setLostReason(''); setPendingStage('') }}
                   className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm font-medium hover:bg-gray-200"
                 >
                   Cancel
