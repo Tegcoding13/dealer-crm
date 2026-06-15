@@ -6,7 +6,7 @@ import AppLayout from '../components/AppLayout'
 
 type Org = { id: string; name: string; plan: string; created_at: string }
 
-const ADMIN_EMAIL = 'tegnarski13@gmail.com'
+const ADMIN_EMAILS = ['tegnarski13@gmail.com', 'tegcoding13@gmail.com']
 
 export default function AdminPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null)
@@ -18,7 +18,7 @@ export default function AdminPage() {
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user || user.email !== ADMIN_EMAIL) { setAllowed(false); return }
+      if (!user || !ADMIN_EMAILS.includes(user.email ?? '')) { setAllowed(false); return }
       setAllowed(true)
       fetchOrgs()
     }

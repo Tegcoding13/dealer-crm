@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
 
-const ADMIN_EMAIL = 'tegnarski13@gmail.com'
+const ADMIN_EMAILS = ['tegnarski13@gmail.com', 'tegcoding13@gmail.com']
 
 export async function POST(req: NextRequest) {
   // Verify caller is the admin
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
   const { data: { user } } = await supabase.auth.getUser(token)
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || !ADMIN_EMAILS.includes(user.email ?? '')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
