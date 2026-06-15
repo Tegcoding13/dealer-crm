@@ -54,8 +54,10 @@ export default function Sidebar() {
     }
 
     const fetchTeam = async () => {
-      const { data: members } = await supabase.from('org_members').select('full_name').not('full_name', 'is', null)
-      const names = (members || []).map(m => m.full_name).filter(Boolean) as string[]
+      const { data: members } = await supabase.from('org_members').select('full_name, user_id')
+      const names = (members || [])
+        .map(m => m.full_name)
+        .filter(Boolean) as string[]
       const counts = await Promise.all(names.map(async name => {
         const { count } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'open').eq('assigned_to', name)
         return { name, taskCount: count || 0 }
