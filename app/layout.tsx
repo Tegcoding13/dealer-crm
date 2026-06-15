@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dealer CRM",
-  description: "Dealer CRM",
+  title: "IronFlowCRM",
+  description: "IronFlowCRM",
 };
 
 export default function RootLayout({

@@ -36,7 +36,7 @@ export default function Sidebar() {
   return (
     <aside className="w-56 bg-[#2d1b69] min-h-screen flex flex-col shrink-0">
       <div className="px-5 py-5 border-b border-white/10">
-        <span className="text-white font-bold text-lg tracking-tight">Dealer CRM</span>
+        <span className="text-white font-bold text-lg tracking-tight">IronFlowCRM</span>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">

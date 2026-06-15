@@ -37,7 +37,7 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Dealer CRM</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">IronFlowCRM</h1>
         <p className="text-gray-500 text-sm mb-6">{isSignUp ? 'Create your account' : 'Sign in to your account'}</p>
 
         <form onSubmit={handleAuth} className="space-y-4">
