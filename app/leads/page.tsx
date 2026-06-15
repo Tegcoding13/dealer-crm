@@ -22,6 +22,10 @@ type Lead = {
 
 const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'closed-won', 'closed-lost']
 
+const SOURCES = ['Referral', 'Website', 'Walk-in', 'Social Media', 'Cold Call', 'Event', 'Email Campaign', 'Other']
+
+const OWNERS = ['Tyler Egnarski']
+
 const STAGE_COLORS: Record<string, string> = {
   'new': 'bg-gray-100 text-gray-700',
   'contacted': 'bg-blue-100 text-blue-700',
@@ -31,13 +35,18 @@ const STAGE_COLORS: Record<string, string> = {
   'closed-lost': 'bg-red-100 text-red-700',
 }
 
-const EMPTY_FORM = { name: '', company: '', phone: '', email: '', address: '', source: '', owner: '', stage: 'new', value: '' }
+const EMPTY_FORM = {
+  firstName: '', lastName: '', company: '', phone: '', email: '',
+  address: '', source: '', owner: '', stage: 'new', value: ''
+}
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState('')
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState('all')
@@ -56,8 +65,17 @@ export default function LeadsPage() {
 
   const handleAddLead = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError('')
+
+    const firstName = form.firstName.trim()
+    const lastName = form.lastName.trim()
+    if (!firstName) { setFormError('First name is required.'); return }
+
+    const fullName = lastName ? `${firstName} ${lastName}` : firstName
+
+    setSaving(true)
     const { error } = await supabase.from('leads').insert({
-      name: form.name,
+      name: fullName,
       company: form.company || null,
       phone: form.phone || null,
       email: form.email || null,
@@ -67,11 +85,15 @@ export default function LeadsPage() {
       stage: form.stage,
       value: parseFloat(form.value) || 0,
     })
-    if (!error) {
+
+    if (error) {
+      setFormError(error.message)
+    } else {
       setForm(EMPTY_FORM)
       setShowForm(false)
       fetchLeads()
     }
+    setSaving(false)
   }
 
   const filtered = leads.filter(l => {
@@ -82,13 +104,15 @@ export default function LeadsPage() {
     return matchSearch && matchStage
   })
 
+  const inp = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+
   return (
     <AppLayout>
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-gray-900">Leads</h1>
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => { setShowForm(true); setFormError('') }}
             className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700"
           >
             + Add Lead
@@ -159,40 +183,69 @@ export default function LeadsPage() {
 
       {/* Add lead modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Lead</h2>
             <form onSubmit={handleAddLead} className="space-y-3">
-              <input required placeholder="Full name *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input placeholder="Company" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+              {/* Name */}
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input required placeholder="First name *" value={form.firstName}
+                  onChange={e => setForm({ ...form, firstName: e.target.value })} className={inp} />
+                <input placeholder="Last name" value={form.lastName}
+                  onChange={e => setForm({ ...form, lastName: e.target.value })} className={inp} />
               </div>
-              <input placeholder="Address" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+              {/* Company */}
+              <input placeholder="Company" value={form.company}
+                onChange={e => setForm({ ...form, company: e.target.value })} className={inp} />
+
+              {/* Phone + Email */}
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Source (referral, web…)" value={form.source} onChange={e => setForm({ ...form, source: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input placeholder="Owner / salesperson" value={form.owner} onChange={e => setForm({ ...form, owner: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input placeholder="Phone" value={form.phone}
+                  onChange={e => setForm({ ...form, phone: e.target.value })} className={inp} />
+                <input placeholder="Email" value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })} className={inp} />
               </div>
+
+              {/* Address */}
+              <input placeholder="Address" value={form.address}
+                onChange={e => setForm({ ...form, address: e.target.value })} className={inp} />
+
+              {/* Source dropdown */}
+              <select value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} className={inp}>
+                <option value="">Select source…</option>
+                {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+
+              {/* Owner dropdown */}
+              <select value={form.owner} onChange={e => setForm({ ...form, owner: e.target.value })} className={inp}>
+                <option value="">Select owner…</option>
+                {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+
+              {/* Value + Stage */}
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Deal value ($)" type="number" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <select value={form.stage} onChange={e => setForm({ ...form, stage: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input placeholder="Deal value ($)" type="number" value={form.value}
+                  onChange={e => setForm({ ...form, value: e.target.value })} className={inp} />
+                <select value={form.stage} onChange={e => setForm({ ...form, stage: e.target.value })} className={inp}>
                   {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
+
+              {formError && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{formError}</p>
+              )}
+
               <div className="flex gap-2 pt-1">
-                <button type="submit" className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700">Save</button>
+                <button type="submit" disabled={saving}
+                  className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
                 <button type="button" onClick={() => setShowForm(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm font-medium hover:bg-gray-200">Cancel</button>
+                  className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm font-medium hover:bg-gray-200">
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
