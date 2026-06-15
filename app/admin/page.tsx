@@ -246,20 +246,20 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">First name *</label>
-                  <input required placeholder="Andy" value={newUser.firstName} onChange={e => setNewUser({ ...newUser, firstName: e.target.value })} className={inp} />
+                  <input required placeholder="First name" value={newUser.firstName} onChange={e => setNewUser({ ...newUser, firstName: e.target.value })} className={inp} />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Last name *</label>
-                  <input required placeholder="Flint" value={newUser.lastName} onChange={e => setNewUser({ ...newUser, lastName: e.target.value })} className={inp} />
+                  <input required placeholder="Last name" value={newUser.lastName} onChange={e => setNewUser({ ...newUser, lastName: e.target.value })} className={inp} />
                 </div>
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Email *</label>
-                <input required type="email" placeholder="andy.flint@dealership.com" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} className={inp} />
+                <input required type="email" placeholder="employee@dealership.com" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} className={inp} />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Phone</label>
-                <input type="tel" placeholder="(555) 000-0000" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} className={inp} />
+                <input type="tel" placeholder="Phone number" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} className={inp} />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Temp password *</label>
