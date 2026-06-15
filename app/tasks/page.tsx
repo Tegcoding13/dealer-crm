@@ -34,8 +34,11 @@ export default function TasksPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    supabase.from('org_members').select('full_name').maybeSingle().then(({ data }) => {
-      if (data?.full_name) setMyName(data.full_name)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase.from('org_members').select('full_name').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+        if (data?.full_name) setMyName(data.full_name)
+      })
     })
   }, [])
 

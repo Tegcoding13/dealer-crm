@@ -45,7 +45,8 @@ export default function Sidebar() {
 
   useEffect(() => {
     const fetchCount = async () => {
-      const { data: memberData } = await supabase.from('org_members').select('full_name').maybeSingle()
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: memberData } = await supabase.from('org_members').select('full_name').eq('user_id', user?.id ?? '').maybeSingle()
       const name = memberData?.full_name
       let query = supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'open')
       if (name) query = query.eq('assigned_to', name)
