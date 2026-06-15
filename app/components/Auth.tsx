@@ -88,14 +88,15 @@ export default function Auth() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl py-3 text-sm font-bold hover:from-green-600 hover:to-emerald-700 active:scale-[0.98] transition-all shadow-md shadow-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full text-white rounded-xl py-3 text-sm font-bold active:scale-[0.98] transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: 'linear-gradient(to right, #367C2B, #4a9e38)', boxShadow: '0 4px 14px rgba(54,124,43,0.35)' }}
           >
             {loading ? 'Signing in…' : '→ Sign In'}
           </button>
         </form>
 
         <div className="mt-5 pt-4 border-t border-gray-100 text-center">
-          <Link href="/demo" className="text-sm text-[#14532d] font-medium hover:underline">
+          <Link href="/demo" className="text-sm text-[#367C2B] font-medium hover:underline">
             View live demo →
           </Link>
         </div>

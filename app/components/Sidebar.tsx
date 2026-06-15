@@ -35,7 +35,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-56 bg-[#14532d] min-h-screen flex flex-col shrink-0">
+    <aside className="w-56 bg-[#367C2B] min-h-screen flex flex-col shrink-0">
       <div className="px-4 py-5 border-b border-white/10">
         <Image src="/logo.png" alt="IronFlow CRM" width={160} height={55} className="object-contain w-full" priority />
       </div>
