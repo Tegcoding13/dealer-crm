@@ -79,16 +79,16 @@ export default function DemoPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Demo banner */}
-      <div className="bg-[#2d1b69] text-white text-sm py-2 px-4 flex items-center justify-between">
+      <div className="bg-[#14532d] text-white text-sm py-2 px-4 flex items-center justify-between">
         <span className="font-medium">👋 You&apos;re viewing a demo of IronFlowCRM</span>
-        <Link href="/" className="bg-white text-[#2d1b69] text-xs font-semibold px-3 py-1 rounded-full hover:bg-gray-100">
+        <Link href="/" className="bg-white text-[#14532d] text-xs font-semibold px-3 py-1 rounded-full hover:bg-gray-100">
           Sign In →
         </Link>
       </div>
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className="w-56 bg-[#2d1b69] flex flex-col shrink-0">
+        <aside className="w-56 bg-[#14532d] flex flex-col shrink-0">
           <div className="px-4 py-5 border-b border-white/10">
             <Image src="/logo.png" alt="IronFlow CRM" width={160} height={55} className="object-contain w-full" priority />
           </div>
