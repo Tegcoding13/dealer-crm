@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useOrgId } from '@/lib/use-org-id'
+import { useEmployees } from '@/lib/use-employees'
 import AppLayout from '../components/AppLayout'
 
 type Task = {
@@ -18,11 +19,10 @@ type Task = {
   leads?: { id: string; name: string } | null
 }
 
-const OWNERS = ['Tyler Egnarski']
-
 export default function TasksPage() {
   const router = useRouter()
   const orgId = useOrgId()
+  const employees = useEmployees()
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<'open' | 'done' | 'all'>('open')
@@ -126,7 +126,7 @@ export default function TasksPage() {
           <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="all">All assignees</option>
-            {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+            {employees.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
         </div>
 
@@ -222,7 +222,7 @@ export default function TasksPage() {
                   <label className="block text-xs text-gray-500 mb-1">Assign to</label>
                   <select value={form.assigned_to} onChange={e => setForm({ ...form, assigned_to: e.target.value })} className={inp}>
                     <option value="">Unassigned</option>
-                    {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                    {employees.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </div>
               </div>

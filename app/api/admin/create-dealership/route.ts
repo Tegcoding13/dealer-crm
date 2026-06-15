@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { dealershipName, email, password } = await req.json()
+  const { dealershipName, email, password, fullName } = await req.json()
   if (!dealershipName || !email || !password) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
   }
@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     user_id: newUser.user.id,
     organization_id: org.id,
     role: 'admin',
+    full_name: fullName || null,
   })
   if (memberErr) {
     return NextResponse.json({ error: memberErr.message }, { status: 500 })

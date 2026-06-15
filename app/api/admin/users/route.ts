@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   const [{ data: orgs }, { data: members }, { data: { users } }] = await Promise.all([
     supabaseAdmin.from('organizations').select('id, name, plan, created_at').order('created_at', { ascending: false }),
-    supabaseAdmin.from('org_members').select('user_id, organization_id, role'),
+    supabaseAdmin.from('org_members').select('user_id, organization_id, role, full_name'),
     supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
   ])
 
@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
         id: m.user_id,
         email: userMap[m.user_id]?.email || 'Unknown',
         role: m.role,
+        full_name: m.full_name || null,
         created_at: userMap[m.user_id]?.created_at,
       })),
   }))
@@ -70,7 +71,7 @@ export async function DELETE(req: NextRequest) {
 // POST — add existing or new user to a specific org
 export async function POST(req: NextRequest) {
   if (!await verifyAdmin(req)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const { orgId, email, password, role = 'member' } = await req.json()
+  const { orgId, email, password, role = 'member', fullName } = await req.json()
   if (!orgId || !email || !password) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const { data: newUser, error: userErr } = await supabaseAdmin.auth.admin.createUser({
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
   if (userErr || !newUser.user) return NextResponse.json({ error: userErr?.message || 'Failed to create user' }, { status: 500 })
 
   const { error: memberErr } = await supabaseAdmin.from('org_members').insert({
-    user_id: newUser.user.id, organization_id: orgId, role,
+    user_id: newUser.user.id, organization_id: orgId, role, full_name: fullName || null,
   })
   if (memberErr) return NextResponse.json({ error: memberErr.message }, { status: 500 })
 

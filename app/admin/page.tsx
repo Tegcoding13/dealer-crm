@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import AppLayout from '../components/AppLayout'
 
-type OrgUser = { id: string; email: string; role: string; created_at: string }
+type OrgUser = { id: string; email: string; role: string; full_name: string | null; created_at: string }
 type Org = { id: string; name: string; plan: string; created_at: string; users: OrgUser[] }
 
 const ADMIN_EMAILS = ['tegnarski13@gmail.com', 'tegcoding13@gmail.com']
@@ -16,13 +16,13 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
 
   // New dealership form
-  const [newDealer, setNewDealer] = useState({ dealershipName: '', email: '', password: '' })
+  const [newDealer, setNewDealer] = useState({ dealershipName: '', email: '', password: '', fullName: '' })
   const [dealerSaving, setDealerSaving] = useState(false)
   const [dealerResult, setDealerResult] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
 
   // Add user to org modal
   const [addUserOrg, setAddUserOrg] = useState<Org | null>(null)
-  const [newUser, setNewUser] = useState({ email: '', password: '', role: 'member' })
+  const [newUser, setNewUser] = useState({ firstName: '', lastName: '', email: '', password: '', phone: '', role: 'member' })
   const [userSaving, setUserSaving] = useState(false)
 
   // Edit user modal
@@ -75,11 +75,12 @@ export default function AdminPage() {
     e.preventDefault()
     if (!addUserOrg) return
     setUserSaving(true)
-    const res = await fetch('/api/admin/users', { method: 'POST', headers: authHeaders, body: JSON.stringify({ orgId: addUserOrg.id, ...newUser }) })
+    const fullName = [newUser.firstName, newUser.lastName].filter(Boolean).join(' ') || undefined
+    const res = await fetch('/api/admin/users', { method: 'POST', headers: authHeaders, body: JSON.stringify({ orgId: addUserOrg.id, email: newUser.email, password: newUser.password, role: newUser.role, fullName }) })
     const data = await res.json()
     if (!res.ok) { alert(data.error); setUserSaving(false); return }
     setAddUserOrg(null)
-    setNewUser({ email: '', password: '', role: 'member' })
+    setNewUser({ firstName: '', lastName: '', email: '', password: '', phone: '', role: 'member' })
     fetchOrgs()
     setUserSaving(false)
   }
@@ -129,6 +130,16 @@ export default function AdminPage() {
                   onChange={e => setNewDealer({ ...newDealer, dealershipName: e.target.value })} className={inp} />
               </div>
               <div>
+                <label className="block text-xs text-gray-500 mb-1">Admin first name</label>
+                <input placeholder="Jane" value={newDealer.fullName?.split(' ')[0] || ''}
+                  onChange={e => setNewDealer({ ...newDealer, fullName: `${e.target.value} ${newDealer.fullName?.split(' ').slice(1).join(' ') || ''}`.trim() })} className={inp} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Admin last name</label>
+                <input placeholder="Smith" value={newDealer.fullName?.split(' ').slice(1).join(' ') || ''}
+                  onChange={e => setNewDealer({ ...newDealer, fullName: `${newDealer.fullName?.split(' ')[0] || ''} ${e.target.value}`.trim() })} className={inp} />
+              </div>
+              <div>
                 <label className="block text-xs text-gray-500 mb-1">Admin email *</label>
                 <input required type="email" placeholder="admin@dealership.com" value={newDealer.email}
                   onChange={e => setNewDealer({ ...newDealer, email: e.target.value })} className={inp} />
@@ -166,7 +177,7 @@ export default function AdminPage() {
                   </span>
                   <span className="text-xs text-gray-400">{org.users.length} user{org.users.length !== 1 ? 's' : ''}</span>
                 </div>
-                <button onClick={() => { setAddUserOrg(org); setNewUser({ email: '', password: '', role: 'member' }) }}
+                <button onClick={() => { setAddUserOrg(org); setNewUser({ firstName: '', lastName: '', email: '', password: '', phone: '', role: 'member' }) }}
                   className="text-xs px-3 py-1.5 bg-green-50 text-green-700 font-medium rounded-lg hover:bg-green-100">
                   + Add User
                 </button>
@@ -179,6 +190,7 @@ export default function AdminPage() {
                 <table className="w-full text-sm">
                   <thead className="border-b border-gray-100">
                     <tr>
+                      <th className="text-left px-5 py-2.5 font-medium text-gray-500">Name</th>
                       <th className="text-left px-5 py-2.5 font-medium text-gray-500">Email</th>
                       <th className="text-left px-5 py-2.5 font-medium text-gray-500">Role</th>
                       <th className="text-left px-5 py-2.5 font-medium text-gray-500">Joined</th>
@@ -188,7 +200,8 @@ export default function AdminPage() {
                   <tbody className="divide-y divide-gray-50">
                     {org.users.map(user => (
                       <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-5 py-3 font-medium text-gray-800">{user.email}</td>
+                        <td className="px-5 py-3 font-medium text-gray-800">{user.full_name || <span className="text-gray-400 font-normal">—</span>}</td>
+                        <td className="px-5 py-3 text-gray-600">{user.email}</td>
                         <td className="px-5 py-3">
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${user.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                             {user.role}
@@ -230,13 +243,27 @@ export default function AdminPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-1">Add User</h2>
             <p className="text-sm text-gray-400 mb-4">Adding to <span className="font-medium text-gray-700">{addUserOrg.name}</span></p>
             <form onSubmit={handleAddUser} className="space-y-3">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Email *</label>
-                <input required type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} className={inp} />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">First name *</label>
+                  <input required placeholder="Andy" value={newUser.firstName} onChange={e => setNewUser({ ...newUser, firstName: e.target.value })} className={inp} />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Last name *</label>
+                  <input required placeholder="Flint" value={newUser.lastName} onChange={e => setNewUser({ ...newUser, lastName: e.target.value })} className={inp} />
+                </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Password *</label>
-                <input required value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className={inp} />
+                <label className="block text-xs text-gray-500 mb-1">Email *</label>
+                <input required type="email" placeholder="andy.flint@dealership.com" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} className={inp} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Phone</label>
+                <input type="tel" placeholder="(555) 000-0000" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} className={inp} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Temp password *</label>
+                <input required placeholder="TempPass123!" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className={inp} />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Role</label>

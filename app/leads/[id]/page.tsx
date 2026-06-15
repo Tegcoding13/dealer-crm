@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useOrgId } from '@/lib/use-org-id'
+import { useEmployees } from '@/lib/use-employees'
 import AppLayout from '../../components/AppLayout'
 
 type Lead = {
@@ -42,8 +43,6 @@ type Task = {
 }
 
 const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'closed-won', 'closed-lost']
-
-const OWNERS = ['Tyler Egnarski']
 
 const TASK_TEMPLATES = [
   'Follow-up call',
@@ -95,6 +94,7 @@ export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const orgId = useOrgId()
+  const employees = useEmployees()
 
   const [lead, setLead] = useState<Lead | null>(null)
   const [activities, setActivities] = useState<Activity[]>([])
@@ -452,7 +452,7 @@ export default function LeadDetailPage() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="">Assign to…</option>
-                  {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                  {employees.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
                 <div className="w-full">
                   <label className="block text-xs text-gray-400 mb-1 ml-1">Due date</label>
@@ -543,7 +543,7 @@ export default function LeadDetailPage() {
                   className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="">Select employee…</option>
-                  {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                  {employees.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
                 <button
                   onClick={logActivity}
