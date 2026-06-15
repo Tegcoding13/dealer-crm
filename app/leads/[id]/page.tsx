@@ -42,6 +42,26 @@ type Task = {
 
 const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'closed-won', 'closed-lost']
 
+const OWNERS = ['Tyler Egnarski']
+
+const TASK_TEMPLATES = [
+  'Follow-up call',
+  'Send quote',
+  'Schedule appointment',
+  'Send email',
+  'Leave voicemail',
+  'Send proposal',
+  'Follow-up email',
+  'Schedule demo / test drive',
+  'Collect paperwork',
+  'Review financing options',
+  'Check in with customer',
+  'Send thank you',
+  'Schedule delivery',
+  'Confirm availability',
+  'Other…',
+]
+
 const STAGE_COLORS: Record<string, string> = {
   'new': 'bg-gray-100 text-gray-700',
   'contacted': 'bg-blue-100 text-blue-700',
@@ -161,11 +181,12 @@ export default function LeadDetailPage() {
   }
 
   const addTask = async () => {
-    if (!taskInput.trim() || !lead) return
+    const title = taskInput.startsWith('__custom:') ? taskInput.slice(9).trim() : taskInput.trim()
+    if (!title || !lead) return
     setSavingTask(true)
     await supabase.from('tasks').insert({
       lead_id: lead.id,
-      title: taskInput.trim(),
+      title,
       due_date: taskDue || null,
       assigned_to: taskAssigned.trim() || null,
       status: 'open',
@@ -174,6 +195,7 @@ export default function LeadDetailPage() {
     setTaskDue('')
     setTaskAssigned('')
     setSavingTask(false)
+
     load()
   }
 
@@ -397,19 +419,35 @@ export default function LeadDetailPage() {
               <h2 className="text-sm font-semibold text-gray-700">Tasks</h2>
 
               <div className="space-y-2">
-                <input
-                  placeholder="New task…"
-                  value={taskInput}
-                  onChange={e => setTaskInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addTask()}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  placeholder="Assign to"
+                <select
+                  value={taskInput.startsWith('__custom:') ? 'Other…' : taskInput || ''}
+                  onChange={e => {
+                    if (e.target.value === 'Other…') setTaskInput('__custom:')
+                    else setTaskInput(e.target.value)
+                  }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Select task…</option>
+                  {TASK_TEMPLATES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                {taskInput.startsWith('__custom:') && (
+                  <input
+                    autoFocus
+                    placeholder="Describe the task…"
+                    value={taskInput.slice(9)}
+                    onChange={e => setTaskInput('__custom:' + e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addTask()}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
+                <select
                   value={taskAssigned}
                   onChange={e => setTaskAssigned(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Assign to…</option>
+                  {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
                 <div className="w-full">
                   <label className="block text-xs text-gray-400 mb-1 ml-1">Due date</label>
                   <input
@@ -421,7 +459,7 @@ export default function LeadDetailPage() {
                 </div>
                 <button
                   onClick={addTask}
-                  disabled={savingTask || !taskInput.trim()}
+                  disabled={savingTask || !(taskInput.startsWith('__custom:') ? taskInput.slice(9).trim() : taskInput.trim())}
                   className="w-full bg-gray-100 text-gray-700 rounded-lg py-1.5 text-sm font-medium hover:bg-gray-200 disabled:opacity-50"
                 >
                   Add task
