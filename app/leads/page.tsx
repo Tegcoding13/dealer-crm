@@ -87,7 +87,15 @@ export default function LeadsPage() {
     if (!orgId) { setFormError('Organization not loaded yet — please wait a moment and try again.'); return }
 
     setSaving(true)
-    const { data: newLead, error } = await supabase.from('leads').insert({
+    const leadId = crypto.randomUUID()
+    const addDays = (n: number) => {
+      const d = new Date()
+      d.setDate(d.getDate() + n)
+      return d.toISOString().slice(0, 10)
+    }
+
+    const { error } = await supabase.from('leads').insert({
+      id: leadId,
       name: fullName,
       company: form.company || null,
       phone: form.phone || null,
@@ -98,19 +106,14 @@ export default function LeadsPage() {
       stage: form.stage,
       value: parseFloat(form.value) || 0,
       organization_id: orgId,
-    }).select('id').single()
+    })
 
     if (error) {
       setFormError(error.message)
-    } else if (newLead) {
-      const addDays = (n: number) => {
-        const d = new Date()
-        d.setDate(d.getDate() + n)
-        return d.toISOString().slice(0, 10)
-      }
+    } else {
       await supabase.from('tasks').insert([
         {
-          lead_id: newLead.id,
+          lead_id: leadId,
           title: 'Initial call',
           assigned_to: form.owner || null,
           due_date: addDays(0),
@@ -118,7 +121,7 @@ export default function LeadsPage() {
           organization_id: orgId,
         },
         {
-          lead_id: newLead.id,
+          lead_id: leadId,
           title: 'Follow-up call (3 day)',
           assigned_to: form.owner || null,
           due_date: addDays(3),
@@ -126,7 +129,7 @@ export default function LeadsPage() {
           organization_id: orgId,
         },
         {
-          lead_id: newLead.id,
+          lead_id: leadId,
           title: 'Follow-up call (2 week)',
           assigned_to: form.owner || null,
           due_date: addDays(14),
