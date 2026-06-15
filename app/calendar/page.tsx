@@ -124,6 +124,7 @@ export default function CalendarPage() {
 
   const overdue = useMemo(() => tasks.filter(t => t.due_date && t.due_date.slice(0, 10) < todayStr && t.status !== 'done'), [tasks, todayStr])
   const upcoming = useMemo(() => tasks.filter(t => t.due_date && t.due_date.slice(0, 10) >= todayStr && t.status !== 'done').slice(0, 10), [tasks, todayStr])
+  const unscheduled = useMemo(() => tasks.filter(t => !t.due_date && t.status !== 'done'), [tasks])
 
   const selectedTasks = tasksByDate[selectedDay] || []
 
@@ -402,6 +403,25 @@ export default function CalendarPage() {
                 </ul>
               )}
             </div>
+
+            {/* Unscheduled */}
+            {unscheduled.length > 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 bg-amber-50">
+                  <p className="text-sm font-semibold text-amber-800">Unscheduled ({unscheduled.length})</p>
+                </div>
+                <ul className="divide-y divide-gray-50 max-h-48 overflow-y-auto">
+                  {unscheduled.map(t => (
+                    <li key={t.id} onClick={() => t.lead_id && router.push(`/leads/${t.lead_id}`)}
+                      className={`px-4 py-2.5 ${t.lead_id ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                      <p className="text-sm font-medium text-gray-800 truncate">{t.title}</p>
+                      {t.assigned_to && <p className="text-xs text-gray-400">{t.assigned_to}</p>}
+                      {t.leads && <p className="text-xs text-gray-400 truncate">{t.leads.name}</p>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
