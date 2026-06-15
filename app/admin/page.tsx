@@ -66,7 +66,7 @@ export default function AdminPage() {
     const data = await res.json()
     if (!res.ok) { setDealerResult({ type: 'error', msg: data.error }); setDealerSaving(false); return }
     setDealerResult({ type: 'success', msg: `✓ Created "${data.org.name}"` })
-    setNewDealer({ dealershipName: '', email: '', password: '' })
+    setNewDealer({ dealershipName: '', email: '', password: '', fullName: '' })
     fetchOrgs()
     setDealerSaving(false)
   }
