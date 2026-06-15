@@ -41,8 +41,6 @@ export default function TasksPage() {
 
   useEffect(() => { fetchTasks() }, [statusFilter, ownerFilter, myName])
 
-  const resolvedOwner = ownerFilter === '__me__' ? myName : ownerFilter === 'all' ? null : ownerFilter
-
   const fetchTasks = async () => {
     setLoading(true)
     let query = supabase
@@ -51,7 +49,17 @@ export default function TasksPage() {
       .order('due_date', { ascending: true, nullsFirst: false })
 
     if (statusFilter !== 'all') query = query.eq('status', statusFilter)
-    if (resolvedOwner) query = query.eq('assigned_to', resolvedOwner)
+
+    if (ownerFilter === '__me__' && myName) {
+      query = query.eq('assigned_to', myName)
+    } else if (ownerFilter !== '__me__' && ownerFilter !== 'all') {
+      query = query.eq('assigned_to', ownerFilter)
+    } else if (ownerFilter === '__me__' && !myName) {
+      // Name not loaded yet — return nothing rather than showing everyone's tasks
+      setTasks([])
+      setLoading(false)
+      return
+    }
 
     const { data } = await query
     setTasks(data || [])
