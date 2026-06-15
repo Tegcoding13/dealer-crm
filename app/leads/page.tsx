@@ -84,8 +84,10 @@ export default function LeadsPage() {
 
     const fullName = lastName ? `${firstName} ${lastName}` : firstName
 
+    if (!orgId) { setFormError('Organization not loaded yet — please wait a moment and try again.'); return }
+
     setSaving(true)
-    const { error } = await supabase.from('leads').insert({
+    const { data: newLead, error } = await supabase.from('leads').insert({
       name: fullName,
       company: form.company || null,
       phone: form.phone || null,
@@ -96,38 +98,34 @@ export default function LeadsPage() {
       stage: form.stage,
       value: parseFloat(form.value) || 0,
       organization_id: orgId,
-    })
+    }).select('id').single()
 
     if (error) {
       setFormError(error.message)
-    } else {
-      // Auto-create follow-up tasks for every new lead
-      const { data: newLead } = await supabase.from('leads').select('id').order('created_at', { ascending: false }).limit(1).single()
-      if (newLead) {
-        const addDays = (n: number) => {
-          const d = new Date()
-          d.setDate(d.getDate() + n)
-          return d.toISOString().slice(0, 10)
-        }
-        await supabase.from('tasks').insert([
-          {
-            lead_id: newLead.id,
-            title: 'Follow-up call (3 day)',
-            assigned_to: form.owner || null,
-            due_date: addDays(3),
-            status: 'open',
-            organization_id: orgId,
-          },
-          {
-            lead_id: newLead.id,
-            title: 'Follow-up call (2 week)',
-            assigned_to: form.owner || null,
-            due_date: addDays(14),
-            status: 'open',
-            organization_id: orgId,
-          },
-        ])
+    } else if (newLead) {
+      const addDays = (n: number) => {
+        const d = new Date()
+        d.setDate(d.getDate() + n)
+        return d.toISOString().slice(0, 10)
       }
+      await supabase.from('tasks').insert([
+        {
+          lead_id: newLead.id,
+          title: 'Follow-up call (3 day)',
+          assigned_to: form.owner || null,
+          due_date: addDays(3),
+          status: 'open',
+          organization_id: orgId,
+        },
+        {
+          lead_id: newLead.id,
+          title: 'Follow-up call (2 week)',
+          assigned_to: form.owner || null,
+          due_date: addDays(14),
+          status: 'open',
+          organization_id: orgId,
+        },
+      ])
       setForm(EMPTY_FORM)
       setShowForm(false)
       fetchLeads()
