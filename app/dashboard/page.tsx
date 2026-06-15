@@ -167,47 +167,39 @@ function DashboardContent() {
     router.push(`/dashboard?${params.toString()}`)
   }
 
-  const renderPersonRow = (
-    person: string,
-    tasks: Task[],
-    leadLookup?: Record<string, Lead>
-  ) => {
+  const renderPersonRow = (person: string, tasks: Task[]) => {
     const color = getColor(person, employeeList)
+    const names = tasks.map(t => {
+      const l = t.leads
+      return l ? (Array.isArray(l) ? l[0]?.name : l.name) : t.title
+    }).filter(Boolean) as string[]
+    const label = names.length > 2
+      ? `${names[0]}, ${names[1]} and ${names.length - 2} more`
+      : names.join(', ') || '—'
     const first = tasks[0]
-    const leadName = first?.leads ? (Array.isArray(first.leads) ? first.leads[0]?.name : first.leads?.name) : null
-    const extra = tasks.length - 1
-
-    const label = leadName
-      ? extra > 0 ? `${leadName} and ${extra} more` : leadName
-      : extra > 0 ? `${first?.title} and ${extra} more` : first?.title || '—'
 
     return (
-      <div key={person} className="px-5 py-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Avatar name={person} color={color} />
-          <span className="text-xs font-semibold" style={{ color }}>{person}</span>
-        </div>
-        <div className="flex items-center gap-3 ml-8">
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: color }}>
+      <div key={person} className="px-5 py-3.5">
+        <p className="text-xs font-bold mb-2" style={{ color }}>{person}</p>
+        <div className="flex items-center gap-3">
+          <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: color }}>
             {tasks.length}
           </span>
           <span className="flex-1 text-sm text-gray-700 truncate">{label}</span>
           <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => router.push('/tasks')}
+              className="text-xs px-4 py-1.5 rounded-lg text-white font-semibold"
+              style={{ background: color }}
+            >
+              Start
+            </button>
             {first?.lead_id && (
               <button
                 onClick={() => router.push(`/leads/${first.lead_id}`)}
-                className="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium"
+                className="text-xs px-4 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold"
               >
                 View
-              </button>
-            )}
-            {tasks.length > 1 && (
-              <button
-                onClick={() => router.push('/tasks')}
-                className="text-xs px-3 py-1 rounded-lg text-white font-medium"
-                style={{ background: color }}
-              >
-                All {tasks.length}
               </button>
             )}
           </div>
@@ -218,28 +210,34 @@ function DashboardContent() {
 
   const renderLeadRow = (person: string, leads: Lead[]) => {
     const color = getColor(person, employeeList)
+    const names = leads.map(l => l.name)
+    const label = names.length > 2
+      ? `${names[0]}, ${names[1]} and ${names.length - 2} more`
+      : names.join(', ')
     const first = leads[0]
-    const extra = leads.length - 1
-    const label = extra > 0 ? `${first.name} and ${extra} more` : first.name
 
     return (
-      <div key={person} className="px-5 py-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Avatar name={person} color={color} />
-          <span className="text-xs font-semibold" style={{ color }}>{person}</span>
-        </div>
-        <div className="flex items-center gap-3 ml-8">
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: color }}>
+      <div key={person} className="px-5 py-3.5">
+        <p className="text-xs font-bold mb-2" style={{ color }}>{person}</p>
+        <div className="flex items-center gap-3">
+          <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: color }}>
             {leads.length}
           </span>
           <span className="flex-1 text-sm text-gray-700 truncate">{label}</span>
           <div className="flex gap-2 shrink-0">
-            <button onClick={() => router.push(`/leads/${first.id}`)} className="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium">View</button>
-            {leads.length > 1 && (
-              <button onClick={() => router.push('/leads')} className="text-xs px-3 py-1 rounded-lg text-white font-medium" style={{ background: color }}>
-                All {leads.length}
-              </button>
-            )}
+            <button
+              onClick={() => router.push(`/leads/${first.id}`)}
+              className="text-xs px-4 py-1.5 rounded-lg text-white font-semibold"
+              style={{ background: color }}
+            >
+              Start
+            </button>
+            <button
+              onClick={() => router.push('/leads')}
+              className="text-xs px-4 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold"
+            >
+              View
+            </button>
           </div>
         </div>
       </div>

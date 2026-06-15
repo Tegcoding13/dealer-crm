@@ -108,23 +108,20 @@ export default function Sidebar() {
 
       {/* Team members */}
       {team.length > 0 && (
-        <div className="px-3 pb-3 border-t border-white/10 pt-3">
-          <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest px-3 mb-2">Team</p>
+        <div className="px-3 pb-3 border-t border-white/10 pt-3 space-y-1">
+          <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest px-1 mb-2">Team</p>
           {team.map((member, i) => {
             const color = PERSON_COLORS[i % PERSON_COLORS.length]
-            const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2)
             return (
               <button
                 key={member.name}
                 onClick={() => router.push(`/dashboard?person=${encodeURIComponent(member.name)}`)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-left"
+                className="flex items-center justify-between w-full px-3 py-2 rounded-lg font-semibold text-sm text-white transition-opacity hover:opacity-90"
+                style={{ background: color }}
               >
-                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: color }}>
-                  {initials}
-                </div>
-                <span className="flex-1 text-sm text-white/70 truncate">{member.name.split(' ')[0]}</span>
+                <span>{member.name.split(' ')[0]} {member.name.split(' ')[1]?.[0] ? member.name.split(' ')[1][0] + '.' : ''}</span>
                 {member.taskCount > 0 && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: color }}>
+                  <span className="bg-white/25 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center">
                     {member.taskCount}
                   </span>
                 )}
