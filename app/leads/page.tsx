@@ -111,6 +111,14 @@ export default function LeadsPage() {
       await supabase.from('tasks').insert([
         {
           lead_id: newLead.id,
+          title: 'Initial call',
+          assigned_to: form.owner || null,
+          due_date: addDays(0),
+          status: 'open',
+          organization_id: orgId,
+        },
+        {
+          lead_id: newLead.id,
           title: 'Follow-up call (3 day)',
           assigned_to: form.owner || null,
           due_date: addDays(3),
