@@ -95,9 +95,12 @@ export default function Auth() {
           </button>
         </form>
 
-        <div className="mt-5 pt-4 border-t border-gray-100 text-center">
-          <Link href="/demo" className="text-sm text-[#367C2B] font-medium hover:underline">
-            View live demo →
+        <div className="mt-5 pt-4 border-t border-gray-100 text-center space-y-2">
+          <Link href="/signup" className="block text-sm font-semibold text-[#367C2B] hover:underline">
+            Start free trial →
+          </Link>
+          <Link href="/demo" className="block text-sm text-gray-400 hover:underline">
+            View live demo
           </Link>
         </div>
       </div>

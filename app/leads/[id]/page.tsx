@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useOrgId } from '@/lib/use-org-id'
 import AppLayout from '../../components/AppLayout'
 
 type Lead = {
@@ -93,6 +94,7 @@ const ACTIVITY_ICONS: Record<string, { bg: string; icon: React.ReactNode }> = {
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const orgId = useOrgId()
 
   const [lead, setLead] = useState<Lead | null>(null)
   const [activities, setActivities] = useState<Activity[]>([])
@@ -158,6 +160,7 @@ export default function LeadDetailPage() {
         text: `Stage changed from "${lead.stage}" to "${newStage}"`,
         by: lead.owner || 'system',
         ts: new Date().toISOString(),
+        organization_id: orgId,
       })
       setLead({ ...lead, stage: newStage })
       load()
@@ -173,6 +176,7 @@ export default function LeadDetailPage() {
       text: actInput.trim(),
       by: actBy.trim() || 'me',
       ts: new Date().toISOString(),
+      organization_id: orgId,
     })
     setActInput('')
     setActBy('')
@@ -190,6 +194,7 @@ export default function LeadDetailPage() {
       due_date: taskDue || null,
       assigned_to: taskAssigned.trim() || null,
       status: 'open',
+      organization_id: orgId,
     })
     setTaskInput('')
     setTaskDue('')
@@ -228,6 +233,7 @@ export default function LeadDetailPage() {
           text: `Outbound call initiated to ${lead.phone}`,
           by: lead.owner || 'me',
           ts: new Date().toISOString(),
+          organization_id: orgId,
         })
         load()
       }

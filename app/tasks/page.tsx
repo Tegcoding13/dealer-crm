@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useOrgId } from '@/lib/use-org-id'
 import AppLayout from '../components/AppLayout'
 
 type Task = {
@@ -21,6 +22,7 @@ const OWNERS = ['Tyler Egnarski']
 
 export default function TasksPage() {
   const router = useRouter()
+  const orgId = useOrgId()
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<'open' | 'done' | 'all'>('open')
@@ -68,6 +70,7 @@ export default function TasksPage() {
       assigned_to: form.assigned_to || null,
       lead_id: form.lead_id || null,
       status: 'open',
+      organization_id: orgId,
     })
     setForm({ title: '', description: '', due_date: '', assigned_to: '', lead_search: '', lead_id: '' })
     setLeadResults([])

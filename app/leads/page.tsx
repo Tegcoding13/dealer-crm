@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useOrgId } from '@/lib/use-org-id'
 import AppLayout from '../components/AppLayout'
 
 type Lead = {
@@ -50,6 +51,7 @@ const EMPTY_FORM = {
 }
 
 export default function LeadsPage() {
+  const orgId = useOrgId()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -93,6 +95,7 @@ export default function LeadsPage() {
       owner: form.owner || null,
       stage: form.stage,
       value: parseFloat(form.value) || 0,
+      organization_id: orgId,
     })
 
     if (error) {
@@ -106,6 +109,7 @@ export default function LeadsPage() {
           title: 'Follow-up call',
           assigned_to: form.owner || null,
           status: 'open',
+          organization_id: orgId,
         })
       }
       setForm(EMPTY_FORM)

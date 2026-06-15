@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabase'
+import { useOrgId } from '@/lib/use-org-id'
 import AppLayout from '../components/AppLayout'
 
 type Row = Record<string, string>
@@ -27,6 +28,7 @@ type Step = 'upload' | 'map' | 'preview' | 'done'
 
 export default function ImportPage() {
   const router = useRouter()
+  const orgId = useOrgId()
   const [step, setStep] = useState<Step>('upload')
   const [headers, setHeaders] = useState<string[]>([])
   const [rows, setRows] = useState<Row[]>([])
@@ -115,6 +117,7 @@ export default function ImportPage() {
         notes: mapping.notes ? row[mapping.notes]?.trim() || null : null,
         stage,
         value,
+        organization_id: orgId,
       }
     }).filter((r): r is NonNullable<typeof r> => r !== null)
 
