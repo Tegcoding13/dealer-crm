@@ -39,7 +39,11 @@ export default function Sidebar() {
 
   useEffect(() => {
     const fetchCount = async () => {
-      const { count } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'open')
+      const { data: memberData } = await supabase.from('org_members').select('full_name').maybeSingle()
+      const name = memberData?.full_name
+      let query = supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'open')
+      if (name) query = query.eq('assigned_to', name)
+      const { count } = await query
       setOpenTasks(count || 0)
     }
     fetchCount()
