@@ -26,13 +26,22 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<'open' | 'done' | 'all'>('open')
-  const [ownerFilter, setOwnerFilter] = useState('all')
+  const [ownerFilter, setOwnerFilter] = useState<string>('__me__')
+  const [myName, setMyName] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', due_date: '', assigned_to: '', lead_search: '', lead_id: '' })
   const [leadResults, setLeadResults] = useState<{ id: string; name: string }[]>([])
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => { fetchTasks() }, [statusFilter, ownerFilter])
+  useEffect(() => {
+    supabase.from('org_members').select('full_name').maybeSingle().then(({ data }) => {
+      if (data?.full_name) setMyName(data.full_name)
+    })
+  }, [])
+
+  useEffect(() => { fetchTasks() }, [statusFilter, ownerFilter, myName])
+
+  const resolvedOwner = ownerFilter === '__me__' ? myName : ownerFilter === 'all' ? null : ownerFilter
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -42,7 +51,7 @@ export default function TasksPage() {
       .order('due_date', { ascending: true, nullsFirst: false })
 
     if (statusFilter !== 'all') query = query.eq('status', statusFilter)
-    if (ownerFilter !== 'all') query = query.eq('assigned_to', ownerFilter)
+    if (resolvedOwner) query = query.eq('assigned_to', resolvedOwner)
 
     const { data } = await query
     setTasks(data || [])
@@ -125,6 +134,7 @@ export default function TasksPage() {
           </select>
           <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="__me__">My Tasks</option>
             <option value="all">All assignees</option>
             {employees.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
