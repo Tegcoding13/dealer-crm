@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 const NAV = [
@@ -31,6 +32,17 @@ const NAV = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [openTasks, setOpenTasks] = useState(0)
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { count } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'open')
+      setOpenTasks(count || 0)
+    }
+    fetchCount()
+    const interval = setInterval(fetchCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -46,6 +58,7 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV.map(({ label, href, icon }) => {
           const active = pathname === href
+          const showBadge = label === 'Tasks' && openTasks > 0
           return (
             <Link
               key={href}
@@ -57,7 +70,12 @@ export default function Sidebar() {
               }`}
             >
               {icon}
-              {label}
+              <span className="flex-1">{label}</span>
+              {showBadge && (
+                <span className="bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 animate-pulse">
+                  {openTasks > 99 ? '99+' : openTasks}
+                </span>
+              )}
             </Link>
           )
         })}

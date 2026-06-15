@@ -98,6 +98,16 @@ export default function LeadsPage() {
     if (error) {
       setFormError(error.message)
     } else {
+      // Auto-create initial task for every new lead
+      const { data: newLead } = await supabase.from('leads').select('id').order('created_at', { ascending: false }).limit(1).single()
+      if (newLead) {
+        await supabase.from('tasks').insert({
+          lead_id: newLead.id,
+          title: 'Follow-up call',
+          assigned_to: form.owner || null,
+          status: 'open',
+        })
+      }
       setForm(EMPTY_FORM)
       setShowForm(false)
       fetchLeads()
