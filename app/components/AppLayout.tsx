@@ -8,20 +8,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const check = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { window.location.href = '/'; return }
-
-      const { data: member } = await supabase
-        .from('org_members')
-        .select('organization_id')
-        .maybeSingle()
-
-      if (!member) { window.location.href = '/setup'; return }
-
-      setReady(true)
-    }
-    check()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        window.location.href = '/'
+      } else {
+        setReady(true)
+      }
+    })
   }, [])
 
   if (!ready) return (
