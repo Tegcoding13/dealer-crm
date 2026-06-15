@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
 export default function Auth() {
@@ -69,6 +70,12 @@ export default function Auth() {
             {loading ? 'Loading…' : 'Sign in'}
           </button>
         </form>
+
+        <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+          <Link href="/demo" className="text-sm text-[#2d1b69] font-medium hover:underline">
+            View live demo →
+          </Link>
+        </div>
       </div>
     </div>
   )
