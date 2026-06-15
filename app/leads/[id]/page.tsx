@@ -537,12 +537,14 @@ export default function LeadDetailPage() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
               <div className="flex gap-2">
-                <input
-                  placeholder="Your name"
+                <select
                   value={actBy}
                   onChange={e => setActBy(e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Select employee…</option>
+                  {OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
                 <button
                   onClick={logActivity}
                   disabled={savingAct || !actInput.trim()}
