@@ -2,9 +2,11 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+
+const PERSON_COLORS = ['#e85d4a', '#4b9ef4', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#0ea5e9', '#f97316']
 
 const NAV = [
   { label: 'Dashboard', href: '/dashboard', icon: (
@@ -33,9 +35,13 @@ const NAV = [
   )},
 ]
 
+type TeamMember = { name: string; taskCount: number }
+
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [openTasks, setOpenTasks] = useState(0)
+  const [team, setTeam] = useState<TeamMember[]>([])
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -46,8 +52,20 @@ export default function Sidebar() {
       const { count } = await query
       setOpenTasks(count || 0)
     }
+
+    const fetchTeam = async () => {
+      const { data: members } = await supabase.from('org_members').select('full_name').not('full_name', 'is', null)
+      const names = (members || []).map(m => m.full_name).filter(Boolean) as string[]
+      const counts = await Promise.all(names.map(async name => {
+        const { count } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'open').eq('assigned_to', name)
+        return { name, taskCount: count || 0 }
+      }))
+      setTeam(counts)
+    }
+
     fetchCount()
-    const interval = setInterval(fetchCount, 30000)
+    fetchTeam()
+    const interval = setInterval(() => { fetchCount(); fetchTeam() }, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -87,6 +105,34 @@ export default function Sidebar() {
           )
         })}
       </nav>
+
+      {/* Team members */}
+      {team.length > 0 && (
+        <div className="px-3 pb-3 border-t border-white/10 pt-3">
+          <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest px-3 mb-2">Team</p>
+          {team.map((member, i) => {
+            const color = PERSON_COLORS[i % PERSON_COLORS.length]
+            const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2)
+            return (
+              <button
+                key={member.name}
+                onClick={() => router.push(`/dashboard?person=${encodeURIComponent(member.name)}`)}
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-left"
+              >
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: color }}>
+                  {initials}
+                </div>
+                <span className="flex-1 text-sm text-white/70 truncate">{member.name.split(' ')[0]}</span>
+                {member.taskCount > 0 && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: color }}>
+                    {member.taskCount}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       <div className="px-3 py-4 border-t border-white/10">
         <button
