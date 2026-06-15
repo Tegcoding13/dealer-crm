@@ -32,7 +32,7 @@ type Activity = {
   text: string | null
   by: string | null
   ts: string
-  leads?: { name: string } | null
+  leads?: { name: string } | { name: string }[] | null
 }
 
 const PERSON_COLORS = ['#e85d4a', '#4b9ef4', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#0ea5e9', '#f97316']
