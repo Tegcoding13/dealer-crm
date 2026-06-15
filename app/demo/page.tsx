@@ -89,8 +89,8 @@ export default function DemoPage() {
       <div className="flex flex-1">
         {/* Sidebar */}
         <aside className="w-56 bg-[#2d1b69] flex flex-col shrink-0">
-          <div className="px-4 py-4 border-b border-white/10 bg-white/10 rounded-lg mx-2 mt-2">
-            <Image src="/IronFlowCRM.PNG" alt="IronFlow CRM" width={160} height={55} className="object-contain w-full" priority />
+          <div className="px-4 py-5 border-b border-white/10">
+            <Image src="/logo.png" alt="IronFlow CRM" width={160} height={55} className="object-contain w-full" priority />
           </div>
           <nav className="flex-1 px-3 py-4 space-y-1">
             {NAV.map(({ label, view: v }) => (

@@ -30,7 +30,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-sm">
         <div className="flex justify-center mb-4">
-          <Image src="/IronFlowCRM.PNG" alt="IronFlow CRM" width={220} height={80} className="object-contain" priority />
+          <Image src="/logo.png" alt="IronFlow CRM" width={220} height={80} className="object-contain" priority />
         </div>
         <p className="text-gray-500 text-sm text-center mb-6">Sign in to your account</p>
 
