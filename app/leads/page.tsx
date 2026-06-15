@@ -27,12 +27,21 @@ const SOURCES = ['Referral', 'Website', 'Walk-in', 'Social Media', 'Cold Call', 
 const OWNERS = ['Tyler Egnarski']
 
 const STAGE_COLORS: Record<string, string> = {
-  'new': 'bg-gray-100 text-gray-700',
+  'new': 'bg-gray-100 text-gray-600',
   'contacted': 'bg-blue-100 text-blue-700',
   'qualified': 'bg-yellow-100 text-yellow-700',
   'proposal': 'bg-purple-100 text-purple-700',
   'closed-won': 'bg-green-100 text-green-700',
   'closed-lost': 'bg-red-100 text-red-700',
+}
+
+const STAGE_LABELS: Record<string, string> = {
+  'new': 'New',
+  'contacted': 'Contacted',
+  'qualified': 'Qualified',
+  'proposal': 'Proposal',
+  'closed-won': '✓ Won',
+  'closed-lost': '✕ Lost',
 }
 
 const EMPTY_FORM = {
@@ -97,9 +106,17 @@ export default function LeadsPage() {
   }
 
   const filtered = leads.filter(l => {
-    const matchSearch = !search || l.name.toLowerCase().includes(search.toLowerCase()) ||
-      (l.company || '').toLowerCase().includes(search.toLowerCase()) ||
-      (l.owner || '').toLowerCase().includes(search.toLowerCase())
+    const q = search.toLowerCase()
+    const matchSearch = !search ||
+      l.name.toLowerCase().includes(q) ||
+      (l.company || '').toLowerCase().includes(q) ||
+      (l.phone || '').replace(/\D/g, '').includes(q.replace(/\D/g, '')) ||
+      (l.phone || '').toLowerCase().includes(q) ||
+      (l.email || '').toLowerCase().includes(q) ||
+      (l.address || '').toLowerCase().includes(q) ||
+      (l.owner || '').toLowerCase().includes(q) ||
+      (l.source || '').toLowerCase().includes(q) ||
+      l.stage.toLowerCase().includes(q)
     const matchStage = stageFilter === 'all' || l.stage === stageFilter
     return matchSearch && matchStage
   })
@@ -122,7 +139,7 @@ export default function LeadsPage() {
         {/* Filters */}
         <div className="flex gap-3">
           <input
-            placeholder="Search name, company, owner…"
+            placeholder="Search name, phone, email, company…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -166,8 +183,8 @@ export default function LeadsPage() {
                     <td className="px-4 py-3 text-gray-500">{lead.company || '—'}</td>
                     <td className="px-4 py-3 text-gray-500">{lead.phone || '—'}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${STAGE_COLORS[lead.stage] || 'bg-gray-100 text-gray-700'}`}>
-                        {lead.stage}
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STAGE_COLORS[lead.stage] || 'bg-gray-100 text-gray-700'}`}>
+                        {STAGE_LABELS[lead.stage] || lead.stage}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-500">${lead.value.toLocaleString()}</td>

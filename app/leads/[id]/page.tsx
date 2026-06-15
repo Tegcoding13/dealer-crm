@@ -90,6 +90,8 @@ export default function LeadDetailPage() {
   const [savingTask, setSavingTask] = useState(false)
   const [calling, setCalling] = useState(false)
   const [callStatus, setCallStatus] = useState('')
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (id) load()
@@ -213,6 +215,15 @@ export default function LeadDetailPage() {
     setCalling(false)
   }
 
+  const deleteLead = async () => {
+    if (!lead) return
+    setDeleting(true)
+    await supabase.from('tasks').delete().eq('lead_id', lead.id)
+    await supabase.from('activities').delete().eq('lead_id', lead.id)
+    await supabase.from('leads').delete().eq('id', lead.id)
+    router.push('/leads')
+  }
+
   if (loading) return (
     <AppLayout>
       <div className="flex items-center justify-center h-64 text-gray-400">Loading…</div>
@@ -271,8 +282,42 @@ export default function LeadDetailPage() {
                 Cancel
               </button>
             )}
+            <button
+              onClick={() => setShowDelete(true)}
+              className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              title="Delete lead"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
           </div>
         </div>
+
+        {/* Delete confirmation modal */}
+        {showDelete && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900">Delete lead?</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                This will permanently delete <span className="font-medium text-gray-800">{lead.name}</span> and all their tasks and activity history. This cannot be undone.
+              </p>
+              <div className="flex gap-2 mt-5">
+                <button
+                  onClick={deleteLead}
+                  disabled={deleting}
+                  className="flex-1 bg-red-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting…' : 'Yes, delete'}
+                </button>
+                <button
+                  onClick={() => setShowDelete(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 rounded-lg py-2 text-sm font-medium hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {callStatus && (
           <div className={`text-sm px-4 py-3 rounded-lg ${callStatus.startsWith('Error') ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
