@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="alice">Connecting you to ${name}. Please hold.</Say>
-  <Dial callerId="${process.env.TWILIO_PHONE_NUMBER}" timeout="30">
+  <Dial callerId="${process.env.MY_PHONE_NUMBER}" timeout="30">
     <Number>${to}</Number>
   </Dial>
   <Say voice="alice">The call could not be completed. Goodbye.</Say>
