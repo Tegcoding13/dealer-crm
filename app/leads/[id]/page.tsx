@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useOrgId } from '@/lib/use-org-id'
 import { useEmployees } from '@/lib/use-employees'
+import { fmtDate, fmtDateTime } from '@/lib/fmt-date'
 import AppLayout from '../../components/AppLayout'
 
 type Lead = {
@@ -492,7 +493,7 @@ export default function LeadDetailPage() {
                     { label: 'Owner', value: lead.owner },
                     { label: 'Source', value: lead.source },
                     { label: 'Value', value: lead.value ? `$${lead.value.toLocaleString()}` : null },
-                    { label: 'Created', value: new Date(lead.created_at).toLocaleDateString() },
+                    { label: 'Created', value: fmtDate(lead.created_at) },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between gap-2">
                       <dt className="text-gray-400 shrink-0">{label}</dt>
@@ -583,7 +584,7 @@ export default function LeadDetailPage() {
                         <p className={`text-sm ${task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-700'}`}>{task.title}</p>
                         {(task.due_date || task.assigned_to) && (
                           <p className="text-xs text-gray-400 mt-0.5">
-                            {task.due_date && `Due ${new Date(task.due_date).toLocaleDateString()}`}
+                            {task.due_date && `Due ${fmtDate(task.due_date)}`}
                             {task.due_date && task.assigned_to && ' · '}
                             {task.assigned_to}
                           </p>
@@ -662,7 +663,7 @@ export default function LeadDetailPage() {
                           <p className="text-sm text-gray-700">{act.text}</p>
                           <p className="text-xs text-gray-400 mt-0.5">
                             {act.by && `${act.by} · `}
-                            {new Date(act.ts).toLocaleString()}
+                            {fmtDateTime(act.ts)}
                           </p>
                         </div>
                       </li>

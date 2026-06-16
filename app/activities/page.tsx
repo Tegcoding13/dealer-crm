@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { fmtDayHeader, fmtTime } from '@/lib/fmt-date'
 import AppLayout from '../components/AppLayout'
 
 type Activity = {
@@ -58,9 +59,7 @@ export default function ActivitiesPage() {
   }
 
   const grouped = activities.reduce((acc, act) => {
-    const date = new Date(act.ts).toLocaleDateString('en-US', {
-      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-    })
+    const date = fmtDayHeader(act.ts)
     if (!acc[date]) acc[date] = []
     acc[date].push(act)
     return acc
@@ -124,7 +123,7 @@ export default function ActivitiesPage() {
                           )}
                           <span className="text-xs text-gray-300">·</span>
                           <span className="text-xs text-gray-400">
-                            {new Date(act.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {fmtTime(act.ts)}
                           </span>
                         </div>
                       </div>

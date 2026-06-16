@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { fmtTodayHeader } from '@/lib/fmt-date'
 import AppLayout from '../components/AppLayout'
 
 type Lead = {
@@ -263,7 +264,7 @@ function DashboardContent() {
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-400">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <p className="text-sm text-gray-400">{fmtTodayHeader()}</p>
         </div>
 
         {/* Person filter pills */}

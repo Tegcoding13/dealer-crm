@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useOrgId } from '@/lib/use-org-id'
 import { useEmployees } from '@/lib/use-employees'
+import { fmtDate } from '@/lib/fmt-date'
 import AppLayout from '../components/AppLayout'
 
 type Task = {
@@ -190,7 +191,7 @@ export default function TasksPage() {
                       {task.due_date && (
                         <span className={`text-xs ${isOverdue ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
                           {isOverdue ? '⚠ Overdue · ' : 'Due '}
-                          {new Date(task.due_date).toLocaleDateString()}
+                          {fmtDate(task.due_date)}
                         </span>
                       )}
                       {task.assigned_to && (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { fmtDate } from '@/lib/fmt-date'
 import AppLayout from '../components/AppLayout'
 
 type OrgUser = { id: string; email: string; role: string; full_name: string | null; created_at: string }
@@ -208,7 +209,7 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3 text-gray-400 text-xs">
-                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
+                          {user.created_at ? fmtDate(user.created_at) : '—'}
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2 justify-end">
