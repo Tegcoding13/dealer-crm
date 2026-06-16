@@ -61,6 +61,21 @@ export default function LeadsPage() {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState('all')
+  const [followupDays, setFollowupDays] = useState<[number, number]>([3, 14])
+
+  useEffect(() => {
+    if (!orgId) return
+    supabase
+      .from('organizations')
+      .select('followup_days_1, followup_days_2')
+      .eq('id', orgId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.followup_days_1 && data?.followup_days_2) {
+          setFollowupDays([data.followup_days_1, data.followup_days_2])
+        }
+      })
+  }, [orgId])
 
   useEffect(() => { fetchLeads() }, [])
 
@@ -122,17 +137,17 @@ export default function LeadsPage() {
         },
         {
           lead_id: leadId,
-          title: 'Follow-up call (3 day)',
+          title: `Follow-up call (${followupDays[0]} day)`,
           assigned_to: form.owner || null,
-          due_date: addDays(3),
+          due_date: addDays(followupDays[0]),
           status: 'open',
           organization_id: orgId,
         },
         {
           lead_id: leadId,
-          title: 'Follow-up call (2 week)',
+          title: `Follow-up call (${followupDays[1]} day)`,
           assigned_to: form.owner || null,
-          due_date: addDays(14),
+          due_date: addDays(followupDays[1]),
           status: 'open',
           organization_id: orgId,
         },
